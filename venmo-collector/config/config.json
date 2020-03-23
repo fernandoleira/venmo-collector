@@ -1,0 +1,10 @@
+{
+    "URL": "https://venmo.com/api/v5/public",
+    "DB_CREDENTIALS": {
+        "host": "localhost",
+        "port": 5432,
+        "database": "venmo",
+        "user": "postgres",
+        "password": "postgres"
+    }
+}

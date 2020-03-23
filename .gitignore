@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Local Test
+tests-local
+
+# VSCode Docs
+.vscode
