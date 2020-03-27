@@ -6,5 +6,6 @@
         "database": "venmo",
         "user": "postgres",
         "password": "postgres"
-    }
+    },
+    "REQUEST_TIMER": 1800
 }

@@ -12,8 +12,10 @@ class VenmoRequestor:
         self.cur = self.conn.cursor()
 
     def _init_db_connection(self):
+        print("Connecting to database...")
         try:
             connection = psycopg2.connect(**self._conf["DB_CREDENTIALS"])
+            print("Connected to database!")
             return connection
         except Exception as err:
             print('===== Cannot connect to the DB =====')
@@ -41,15 +43,14 @@ class VenmoRequestor:
         return raw_transactions
     
     def parse_raw_transactions(self, raw_transaction):
+        target_dict = dict(raw_transaction['transactions'][0]['target'])
         new_transaction = {
             'payment_id': str(raw_transaction['payment_id']),
-            'target_username': raw_transaction['transactions'][0]['target']['username'],
-            'target_picture': raw_transaction['transactions'][0]['target']['picture'],
-            'target_firstname': raw_transaction['transactions'][0]['target']['firstname'],
-            'target_lastname': raw_transaction['transactions'][0]['target']['lastname'],
-            'target_date_created': raw_transaction['transactions'][0]['target']['date_created'],
+            'target_username': target_dict['username'],
+            'target_firstname': target_dict['firstname'],
+            'target_lastname': target_dict['lastname'],
+            'target_date_created': target_dict['date_created'],
             'author_username': raw_transaction['actor']['username'],
-            'author_picture': raw_transaction['actor']['picture'],
             'author_firstname': raw_transaction['actor']['firstname'],
             'author_lastname': raw_transaction['actor']['lastname'],
             'author_date_created': raw_transaction['actor']['date_created'],
@@ -70,6 +71,10 @@ class VenmoRequestor:
         return new_transactions
     
     def check_transaction_in_db(self, transaction):
+
+        if '' in transaction.values():
+            return False
+
         check_query = CHECK_QUERY.format(
             column='payment_id', 
             value=transaction['payment_id']
@@ -84,26 +89,22 @@ class VenmoRequestor:
         transaction_query = INSERT_QUERY.format(
             transaction['payment_id'],
             transaction['target_username'],
-            transaction['target_picture'],
             transaction['target_firstname'],
             transaction['target_lastname'],
             transaction['target_date_created'],
             transaction['author_username'],
-            transaction['author_picture'],
             transaction['author_firstname'],
             transaction['author_lastname'],
             transaction['author_date_created'],
             transaction['story_id'],
-            transaction['updated_time'],
+            transaction['updated_time']
         )
 
         try:
-            self.cur.execute(transaction_query)
+            ex = self.cur.execute(transaction_query)
             self.conn.commit()
-
             return 1
 
         except Exception as err:
             print(err)
-
             return 0
